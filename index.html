@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Belajar Leaflet</title>
+    <title>Project Bundle Adjustment Jakarta Selatan</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
     <!-- Load Library Leaflet -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <link rel="stylesheet" href="leaflet-panel-layers-master\leaflet-panel-layers-master\src\leaflet-panel-layers.css" />
-
     <!-- Load Plugin leaflet.ajax -->
     <script src="leaflet.ajax.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/stefanocudini/leaflet-panel-layers/src/leaflet-panel-layers.js"></script>
+    <!-- Load Plugin Legenda -->
+    <script src="https://cdn.jsdelivr.net/gh/stefanocudini/leaflet-panel-layers/src/leaflet-panel-layers.js"></script>
+    <!-- Masukan Bootsrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
 
     <style>
       #map {
@@ -20,21 +23,80 @@
       .leaflet-tile {
         filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
       }
+      /* Membuat Teks Judul */
+      .spatial-data-text {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background-color: rgba(42, 8, 128, 0);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-size: 18px;
+        font-weight: bold;
+        z-index: 1000; /* Pastikan teks berada di atas peta */
+        line-height: 1;
+      }
+
+      /* Mengubah backgroun Pop Up Biru */
+      .custom-popup .leaflet-popup-content-wrapper {
+        background-color: rgb(62, 62, 170) !important;
+        color: white !important;
+        border-radius: 5px;
+        padding: 5px;
+      }
+
+      /* Membuat Style Control Layer */
+      #map {
+        height: 100vh;
+      }
+      .layer-control {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        padding: 10px;
+        border-radius: 5px;
+        color: white;
+        z-index: 1000;
+      }
+      .layer-control button {
+        display: block;
+        margin: 5px 0;
+        padding: 5px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        width: 100%;
+        color: white;
+      }
+      .btn-active {
+        background: #28a745;
+      }
+      .btn-inactive {
+        background: #555;
+      }
     </style>
   </head>
 
   <body>
     <div id="map"></div>
 
+    <!-- Masukkan Fungsi Control Layer -->
+    <div class="layer-control" id="layerControl"></div>
+
+    <!-- Teks Spatial Data Improvement Pacitan di pojok kiri bawah -->
+    <div class="spatial-data-text">Project Bundle Adjustment <br />Jakarta Selatan</div>
+
     <script type="text/javascript">
       // Inisialisasi Peta
       var map = L.map("map").setView([-6.218787, 106.831324], 15);
 
       // Tambahkan Layer Peta (Basemap)
-      var Esri_WorldImagery = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}", {
-        attribution: "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community",
+      var openStreetMap = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
       });
-      map.addLayer(Esri_WorldImagery);
+      map.addLayer(openStreetMap);
 
       // Popup Statis
       var popup = L.popup().setLatLng([-6.2322614, 106.8183028]).setContent("Kamu bisa mengetahui koordinat di peta ini").openOn(map);
@@ -99,7 +161,7 @@
         }
 
         // Tambahkan popup ke layer
-        layer.bindPopup(out.join("<br />"));
+        layer.bindPopup(out.join("<br />"), { className: "custom-popup" });
       }
 
       //Program plugin legenda
@@ -129,16 +191,6 @@
             attribution: "© OpenStreetMap contributors",
           }),
         },
-        {
-          name: "OpenCycleMap",
-          layer: L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "© OpenStreetMap contributors",
-          }),
-        },
-        {
-          name: "Outdoors",
-          layer: L.tileLayer("https://{s}.tile.thunderforest.com/outdoors/{z}/{x}/{y}.png"),
-        },
       ];
 
       var overLayers = [
@@ -160,7 +212,7 @@
         {
           name: "Batas Kelurahan Karet Semanggi",
           icon: iconByName("drinking_water"),
-          layer: new L.GeoJSON.AJAX(["data_geojson/batas_karet_semanggi.geojson.geojson"], { onEachFeature: popUp, style: myStyle2, pointToLayer: featureToMarker }).addTo(map),
+          layer: new L.GeoJSON.AJAX(["data_geojson/batas_karet_semanggi.geojson"], { onEachFeature: popUp, style: myStyle3, pointToLayer: featureToMarker }).addTo(map),
         },
         {
           name: "Batas Kelurahan Karet",
@@ -182,59 +234,60 @@
           icon: iconByName("drinking_water"),
           layer: new L.GeoJSON.AJAX(["data_geojson/batas_setiabudi.geojson"], { onEachFeature: popUp, style: myStyle, pointToLayer: featureToMarker }).addTo(map),
         },
-        //Masukan GeoJson Bidang
-        {
-          name: "Bidang Kelurahan Kuningan Timur",
-          icon: iconByName("bar"),
-          layer: new L.GeoJSON.AJAX(["data_geojson/bidang_kuningan_timur_REVISI.geojson"], { onEachFeature: popUp, style: myStyle, pointToLayer: featureToMarker }).addTo(map),
-        },
-
-        {
-          name: "Bidang Kelurahan Guntur",
-          icon: iconByName("bar"),
-          layer: new L.GeoJSON.AJAX(["data_geojson/bidang_guntur.geojson"], { onEachFeature: popUp, style: myStyle, pointToLayer: featureToMarker }).addTo(map),
-        },
-
-        {
-          name: "Bidang Kelurahan Karet Semanggi",
-          icon: iconByName("bar"),
-          layer: new L.GeoJSON.AJAX(["data_geojson/bidang_karet_semanggi.geojson"], { onEachFeature: popUp, style: myStyle, pointToLayer: featureToMarker }).addTo(map),
-        },
-
-        {
-          name: "Bidang Kelurahan Karet Kuningan",
-          icon: iconByName("bar"),
-          layer: new L.GeoJSON.AJAX(["data_geojson/bidang_karet_kuningan.geojson"], { onEachFeature: popUp, style: myStyle, pointToLayer: featureToMarker }).addTo(map),
-        },
-
-        {
-          name: "Bidang Kelurahan Karet",
-          icon: iconByName("bar"),
-          layer: new L.GeoJSON.AJAX(["data_geojson/bidang_karet_revisi.geojson"], { onEachFeature: popUp, style: myStyle, pointToLayer: featureToMarker }).addTo(map),
-        },
-
-        {
-          name: "Bidang Kelurahan Menteng Atas",
-          icon: iconByName("bar"),
-          layer: new L.GeoJSON.AJAX(["data_geojson/bidang_menteng_atas.geojson"], { onEachFeature: popUp, style: myStyle, pointToLayer: featureToMarker }).addTo(map),
-        },
-
-        {
-          name: "Bidang Kelurahan Pasar Manggis",
-          icon: iconByName("bar"),
-          layer: new L.GeoJSON.AJAX(["data_geojson/bidang_pasar_manggis.geojson"], { onEachFeature: popUp, style: myStyle, pointToLayer: featureToMarker }).addTo(map),
-        },
-
-        {
-          name: "Bidang Kelurahan Setiabudi",
-          icon: iconByName("bar"),
-          layer: new L.GeoJSON.AJAX(["data_geojson/bidang_setiabudi.geojson"], { onEachFeature: popUp, style: myStyle, pointToLayer: featureToMarker }).addTo(map),
-        },
       ];
 
-      var panelLayers = new L.Control.PanelLayers(baseLayers, overLayers);
+      //   Masukkan Layer GeoJSON
+      var layers = {
+        "Bidang Setiabudi": "data_geojson/bidang_setiabudi.geojson",
+        "Bidang Pasar Manggis": "data_geojson/bidang_pasar_manggis.geojson",
+        "Bidang Menteng Atas": "data_geojson/bidang_menteng_atas.geojson",
+        "Bidang Karet Revisi": "data_geojson/bidang_karet_revisi.geojson",
+        "Bidang Karet Kuningan": "data_geojson/bidang_karet_kuningan.geojson",
+        "Bidang Karet Semanggi": "data_geojson/bidang_karet_semanggi.geojson",
+        "Bidang Guntur": "data_geojson/bidang_guntur.geojson",
+        "Bidang Kuningan Timur": "data_geojson/bidang_kuningan_timur_REVISI.geojson",
+      };
 
-      map.addControl(panelLayers);
+      //   Program Control Layer
+      var activeLayers = {};
+      var controlDiv = document.getElementById("layerControl");
+
+      //   Judul Control Layer
+      let title = document.createElement("h3");
+      title.innerHTML = "Control Layer  ";
+      title.style.textAlign = "center";
+      title.style.marginBottom = "10px";
+      title.style.fontSize = "14px";
+      title.style.color = "white";
+
+      controlDiv.appendChild(title);
+
+      for (let name in layers) {
+        let btn = document.createElement("button");
+        btn.innerHTML = name;
+        btn.className = "btn-active"; // 🔹 Default: Aktif
+        btn.style.fontSize = "12px";
+        btn.style.padding = "5px";
+        btn.style.marginBottom = "3px";
+
+        controlDiv.appendChild(btn);
+
+        let geoLayer = new L.GeoJSON.AJAX(layers[name], { onEachFeature: popUp, style: myStyle, pointToLayer: featureToMarker });
+
+        // 🔹 Tambahkan layer langsung ke peta saat halaman dimuat
+        geoLayer.addTo(map);
+        activeLayers[name] = geoLayer;
+
+        btn.onclick = function () {
+          if (map.hasLayer(geoLayer)) {
+            map.removeLayer(geoLayer);
+            btn.className = "btn-inactive";
+          } else {
+            map.addLayer(geoLayer);
+            btn.className = "btn-active";
+          }
+        };
+      }
     </script>
   </body>
 </html>
